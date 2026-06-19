@@ -261,19 +261,6 @@ python inspect_memory.py
 - `STREAMLIT_PRODUCT_SUMMARY.md`：Streamlit 产品化阶段总结
 - `PROJECT_REVIEW.md`：项目复盘、架构说明和面试讲解材料
 
-## 面试可讲点
-
-- 为什么用 LangGraph 管理多步骤工单流程
-- State 中保存了哪些业务信息
-- 为什么知识类工单需要 query rewrite
-- RAG 如何为回复草稿提供事实依据
-- 同一工单历史和相似历史工单分别解决什么问题
-- 为什么重复工单确认要放在 RAG 和 LLM 调用之前
-- 为什么回复发送前必须 human-in-the-loop
-- 如何用 JSON 日志实现审计、记忆和评估
-- 为什么要做分类、策略和记忆检索评估
-- 为什么把命令行 Agent 产品化为 Streamlit 页面
-
 ## 注意事项
 
 - 不要提交 `.env`
