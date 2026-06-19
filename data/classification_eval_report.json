@@ -1,0 +1,35 @@
+{
+  "created_at": "2026-06-19 23:02:21",
+  "total_count": 3,
+  "correct_count": 3,
+  "accuracy": 1.0,
+  "records": [
+    {
+      "ticket_id": "T1001",
+      "ticket_content": "用户反馈：知识库问答没有找到产品介绍，希望尽快处理。",
+      "expected_category": "knowledge_question",
+      "actual_category": "knowledge_question",
+      "expected_priority": "medium",
+      "actual_priority": "medium",
+      "is_correct": true
+    },
+    {
+      "ticket_id": "T1002",
+      "ticket_content": "用户反馈：想了解蓝海科技适合哪些人群使用。",
+      "expected_category": "knowledge_question",
+      "actual_category": "knowledge_question",
+      "expected_priority": "medium",
+      "actual_priority": "medium",
+      "is_correct": true
+    },
+    {
+      "ticket_id": "T1003",
+      "ticket_content": "用户反馈：系统页面打不开，影响今天的培训课程。",
+      "expected_category": "system_issue",
+      "actual_category": "system_issue",
+      "expected_priority": "high",
+      "actual_priority": "high",
+      "is_correct": true
+    }
+  ]
+}

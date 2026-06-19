@@ -1,0 +1,31 @@
+{
+  "created_at": "2026-06-19 23:02:21",
+  "all_passed": true,
+  "report_count": 3,
+  "reports": [
+    {
+      "name": "classification",
+      "title": "工单分类和优先级评估",
+      "report_file": "/Users/yaohe/Desktop/agent—study/ticket-agent-assistant/data/classification_eval_report.json",
+      "total_count": 3,
+      "correct_count": 3,
+      "accuracy": 1.0
+    },
+    {
+      "name": "duplicate_policy",
+      "title": "重复工单策略评估",
+      "report_file": "/Users/yaohe/Desktop/agent—study/ticket-agent-assistant/data/duplicate_policy_eval_report.json",
+      "total_count": 3,
+      "correct_count": 3,
+      "accuracy": 1.0
+    },
+    {
+      "name": "memory_retrieval",
+      "title": "历史记忆检索评估",
+      "report_file": "/Users/yaohe/Desktop/agent—study/ticket-agent-assistant/data/memory_retrieval_eval_report.json",
+      "total_count": 2,
+      "correct_count": 2,
+      "accuracy": 1.0
+    }
+  ]
+}

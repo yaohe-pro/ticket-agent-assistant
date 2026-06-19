@@ -1,0 +1,32 @@
+{
+  "created_at": "2026-06-19 23:02:21",
+  "total_count": 3,
+  "correct_count": 3,
+  "accuracy": 1.0,
+  "records": [
+    {
+      "name": "没有同一工单历史",
+      "previous_ticket_count": 0,
+      "expected_requires_confirmation": false,
+      "actual_requires_confirmation": false,
+      "reason": "没有同一工单历史，可以继续正常处理。",
+      "is_correct": true
+    },
+    {
+      "name": "有 1 次同一工单历史",
+      "previous_ticket_count": 1,
+      "expected_requires_confirmation": true,
+      "actual_requires_confirmation": true,
+      "reason": "检测到同一工单历史，需要人工确认是否继续处理。",
+      "is_correct": true
+    },
+    {
+      "name": "有多次同一工单历史",
+      "previous_ticket_count": 3,
+      "expected_requires_confirmation": true,
+      "actual_requires_confirmation": true,
+      "reason": "检测到同一工单历史，需要人工确认是否继续处理。",
+      "is_correct": true
+    }
+  ]
+}
