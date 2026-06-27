@@ -15,8 +15,10 @@
 
 - 模拟企业工单数据
 - 工单分类和优先级判断
+- 支持自定义工单输入
 - 知识类工单 query rewrite
 - 企业知识库 RAG 检索
+- MCP 风格工具注册和工具路由
 - DeepSeek 生成客服回复草稿
 - 同一工单历史读取
 - 重复工单前置确认
@@ -26,9 +28,12 @@
 - 审核通过发送，审核拒绝等待人工修改
 - 工单处理日志本地保存
 - 日志统计和最近处理记录查看
+- 日志搜索
+- 页面内评估报告展示
 - 分类和优先级评估
 - 重复工单策略评估
 - 历史记忆检索评估
+- 工具路由评估
 - 一键评估总览报告
 
 ## 技术栈
@@ -54,21 +59,27 @@ ticket-agent-assistant/
 │   ├── rag.py
 │   ├── storage.py
 │   ├── ticket_data.py
+│   ├── tools.py
 │   └── web_workflow.py
 ├── data/
 │   ├── classification_eval_report.json
 │   ├── duplicate_policy_eval_report.json
 │   ├── evaluation_summary.json
-│   └── memory_retrieval_eval_report.json
+│   ├── memory_retrieval_eval_report.json
+│   ├── memory_seed.json
+│   └── tool_routing_eval_report.json
 ├── main.py
 ├── streamlit_app.py
 ├── analyze_logs.py
 ├── eval_classification.py
 ├── eval_duplicate_policy.py
 ├── eval_memory_retrieval.py
+├── eval_tool_routing.py
 ├── inspect_memory.py
 ├── run_all_evals.py
+├── DEMO_SCRIPT.md
 ├── MEMORY_STATE_HITL_SUMMARY.md
+├── RESUME_PROJECT.md
 ├── STREAMLIT_PRODUCT_SUMMARY.md
 ├── PROJECT_REVIEW.md
 ├── README_LEARNING_NOTES.md
@@ -142,6 +153,7 @@ http://localhost:8502
 - 编辑回复草稿
 - 人工审核发送或取消
 - 查看日志统计和最近处理记录
+- 查看评估报告
 
 ## 运行命令行版本
 
@@ -163,6 +175,9 @@ T1003
 T1001：用户反馈：知识库问答没有找到产品介绍，希望尽快处理。
 T1002：用户反馈：想了解蓝海科技适合哪些人群使用。
 T1003：用户反馈：系统页面打不开，影响今天的培训课程。
+T1004：用户反馈：登录账号时提示验证码错误，已经尝试多次仍然无法进入系统。
+T1005：用户反馈：想了解企业知识库问答系统的价格和套餐。
+T1009：用户反馈：支付成功后没有开通课程权限。
 ```
 
 ## Agent 流程
@@ -177,7 +192,8 @@ flowchart TD
     F -->|停止| G["保存停止日志"]
     F -->|继续| H["读取相似历史工单"]
     E -->|否| H
-    H --> I{"是否知识类工单"}
+    H --> R["选择并执行辅助工具"]
+    R --> I{"是否知识类工单"}
     I -->|是| J["query rewrite"]
     J --> K["检索企业知识库 RAG"]
     I -->|否| L["跳过知识库检索"]
@@ -197,6 +213,7 @@ flowchart TD
 python eval_classification.py
 python eval_duplicate_policy.py
 python eval_memory_retrieval.py
+python eval_tool_routing.py
 ```
 
 也可以一键运行全部评估：
@@ -211,6 +228,7 @@ python run_all_evals.py
 data/classification_eval_report.json
 data/duplicate_policy_eval_report.json
 data/memory_retrieval_eval_report.json
+data/tool_routing_eval_report.json
 data/evaluation_summary.json
 ```
 
@@ -220,6 +238,7 @@ data/evaluation_summary.json
 - 优先级判断是否正确
 - 重复工单策略是否符合预期
 - 相似历史工单是否能被正确召回
+- 工具路由是否符合预期
 
 ## 日志与记忆
 
@@ -238,6 +257,7 @@ data/ticket_process_log.json
 - 重复工单确认结果
 - 是否使用历史记忆
 - 参考过的历史工单编号
+- 工具名称和工具结果
 - 回复草稿
 - 人工审核结果
 - 最终状态
@@ -257,6 +277,8 @@ python inspect_memory.py
 ## 文档
 
 - `README_LEARNING_NOTES.md`：原始学习版 README，保留详细学习记录
+- `DEMO_SCRIPT.md`：项目演示脚本
+- `RESUME_PROJECT.md`：简历项目描述
 - `MEMORY_STATE_HITL_SUMMARY.md`：记忆、状态和人工确认阶段总结
 - `STREAMLIT_PRODUCT_SUMMARY.md`：Streamlit 产品化阶段总结
 - `PROJECT_REVIEW.md`：项目复盘、架构说明和面试讲解材料

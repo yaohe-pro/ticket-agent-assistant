@@ -26,6 +26,36 @@ EVAL_CASES = [
         "expected_category": "system_issue",
         "expected_priority": "high",
     },
+    {
+        "ticket_id": "T1004",
+        "expected_category": "account_issue",
+        "expected_priority": "high",
+    },
+    {
+        "ticket_id": "T1005",
+        "expected_category": "billing_question",
+        "expected_priority": "medium",
+    },
+    {
+        "ticket_id": "T1006",
+        "expected_category": "schedule_question",
+        "expected_priority": "high",
+    },
+    {
+        "ticket_id": "T1007",
+        "expected_category": "complaint",
+        "expected_priority": "high",
+    },
+    {
+        "ticket_id": "T1009",
+        "expected_category": "billing_question",
+        "expected_priority": "high",
+    },
+    {
+        "ticket_id": "T1012",
+        "expected_category": "system_issue",
+        "expected_priority": "medium",
+    },
 ]
 
 

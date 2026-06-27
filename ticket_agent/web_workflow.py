@@ -7,6 +7,7 @@ from ticket_agent.storage import (
     save_ticket_process_log,
 )
 from ticket_agent.ticket_data import FAKE_TICKET_DATABASE
+from ticket_agent.tools import choose_tool_for_ticket, run_registered_tool
 
 
 def format_history_logs(logs: list) -> str:
@@ -59,6 +60,10 @@ def create_empty_state(ticket_id: str) -> dict:
         "similar_history_count": 0,
         "history_ticket_ids": [],
         "draft_reply": "",
+        "tool_name": "",
+        "tool_arguments": {},
+        "tool_result": "",
+        "tool_reason": "",
         "duplicate_review_result": "",
         "review_result": "",
         "final_status": "",
@@ -103,6 +108,9 @@ def build_draft_prompt(state: dict) -> str:
 【相似历史工单】
 {state["history_context"] or "无"}
 
+【工具调用结果】
+{state["tool_result"] or "无"}
+
 【写作方式】
 如果知识库资料不为空，请按这个结构写：
 您好，根据已有资料，资料中的直接答案。我们也会继续检查知识库展示情况，感谢您的反馈。
@@ -111,11 +119,14 @@ def build_draft_prompt(state: dict) -> str:
 """
 
 
-def load_and_classify_ticket(ticket_id: str) -> dict:
+def load_and_classify_ticket(ticket_id: str, custom_ticket_content: str = "") -> dict:
     state = create_empty_state(ticket_id)
     state["steps"].append("节点 1：读取工单内容")
 
-    ticket_content = FAKE_TICKET_DATABASE.get(ticket_id, "没有找到这个工单。")
+    ticket_content = custom_ticket_content.strip() or FAKE_TICKET_DATABASE.get(
+        ticket_id,
+        "没有找到这个工单。",
+    )
     previous_logs = find_ticket_logs_by_id(ticket_id)
 
     state["ticket_content"] = ticket_content
@@ -133,8 +144,9 @@ def load_and_classify_ticket(ticket_id: str) -> dict:
 def prepare_ticket_for_review(
     ticket_id: str,
     continue_duplicate: bool = False,
+    custom_ticket_content: str = "",
 ) -> dict:
-    state = load_and_classify_ticket(ticket_id)
+    state = load_and_classify_ticket(ticket_id, custom_ticket_content)
 
     state["steps"].append("节点 3：检查是否为重复工单")
     duplicate_policy = decide_duplicate_policy(state["previous_ticket_count"])
@@ -162,8 +174,18 @@ def prepare_ticket_for_review(
         log.get("ticket_id", "未知") for log in similar_logs
     ]
 
+    state["steps"].append("节点 5：选择并执行辅助工具")
+    tool_call = choose_tool_for_ticket(state)
+    state["tool_name"] = tool_call["tool_name"]
+    state["tool_arguments"] = tool_call["tool_arguments"]
+    state["tool_reason"] = tool_call["reason"]
+    state["tool_result"] = run_registered_tool(
+        state["tool_name"],
+        state["tool_arguments"],
+    )
+
     if state["category"] == "knowledge_question":
-        state["steps"].append("节点 5A：检索企业知识库")
+        state["steps"].append("节点 6A：检索企业知识库")
         from ticket_agent.rag import retrieve_knowledge
 
         retrieval_result = retrieve_knowledge(state["ticket_content"])
@@ -172,7 +194,7 @@ def prepare_ticket_for_review(
     else:
         state["rewritten_query"] = ""
 
-    state["steps"].append("节点 6：让 DeepSeek 生成回复草稿")
+    state["steps"].append("节点 7：让 DeepSeek 生成回复草稿")
     state["draft_reply"] = call_deepseek(build_draft_prompt(state))
     state["workflow_status"] = "waiting_reply_review"
     state["final_status"] = "回复草稿已生成，等待人工审核。"
@@ -193,6 +215,10 @@ def stop_duplicate_ticket(state: dict) -> dict:
     final_state["history_context"] = ""
     final_state["similar_history_count"] = 0
     final_state["history_ticket_ids"] = []
+    final_state["tool_name"] = ""
+    final_state["tool_arguments"] = {}
+    final_state["tool_result"] = ""
+    final_state["tool_reason"] = ""
     final_state["final_status"] = "检测到重复工单，已停止处理。"
     final_state["workflow_status"] = "finished"
     save_ticket_process_log(final_state)

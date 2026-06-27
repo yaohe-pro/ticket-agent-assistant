@@ -1,14 +1,14 @@
 {
-  "created_at": "2026-06-19 23:02:21",
+  "created_at": "2026-06-27 11:34:14",
   "all_passed": true,
-  "report_count": 3,
+  "report_count": 4,
   "reports": [
     {
       "name": "classification",
       "title": "工单分类和优先级评估",
       "report_file": "/Users/yaohe/Desktop/agent—study/ticket-agent-assistant/data/classification_eval_report.json",
-      "total_count": 3,
-      "correct_count": 3,
+      "total_count": 9,
+      "correct_count": 9,
       "accuracy": 1.0
     },
     {
@@ -23,8 +23,16 @@
       "name": "memory_retrieval",
       "title": "历史记忆检索评估",
       "report_file": "/Users/yaohe/Desktop/agent—study/ticket-agent-assistant/data/memory_retrieval_eval_report.json",
-      "total_count": 2,
-      "correct_count": 2,
+      "total_count": 3,
+      "correct_count": 3,
+      "accuracy": 1.0
+    },
+    {
+      "name": "tool_routing",
+      "title": "工具路由评估",
+      "report_file": "/Users/yaohe/Desktop/agent—study/ticket-agent-assistant/data/tool_routing_eval_report.json",
+      "total_count": 3,
+      "correct_count": 3,
       "accuracy": 1.0
     }
   ]

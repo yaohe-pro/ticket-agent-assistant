@@ -29,6 +29,12 @@ EVAL_SCRIPTS = [
         "script": PROJECT_ROOT / "eval_memory_retrieval.py",
         "report": DATA_DIR / "memory_retrieval_eval_report.json",
     },
+    {
+        "name": "tool_routing",
+        "title": "工具路由评估",
+        "script": PROJECT_ROOT / "eval_tool_routing.py",
+        "report": DATA_DIR / "tool_routing_eval_report.json",
+    },
 ]
 
 

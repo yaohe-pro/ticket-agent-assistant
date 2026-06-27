@@ -26,6 +26,14 @@ EVAL_CASES = [
         "min_expected_count": 1,
         "expected_keyword": "打不开",
     },
+    {
+        "name": "支付权限类历史记忆",
+        "category": "billing_question",
+        "priority": "high",
+        "ticket_content": "用户反馈：支付成功后没有开通课程权限。",
+        "min_expected_count": 1,
+        "expected_keyword": "支付",
+    },
 ]
 
 

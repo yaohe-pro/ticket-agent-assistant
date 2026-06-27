@@ -6,6 +6,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
 LOG_FILE = DATA_DIR / "ticket_process_log.json"
+MEMORY_SEED_FILE = DATA_DIR / "memory_seed.json"
 
 MEMORY_KEYWORDS = [
     "产品",
@@ -20,6 +21,22 @@ MEMORY_KEYWORDS = [
     "页面",
     "培训",
     "影响",
+    "登录",
+    "验证码",
+    "账号",
+    "支付",
+    "开通",
+    "价格",
+    "套餐",
+    "课程",
+    "直播",
+    "投诉",
+    "回复",
+    "解析",
+    "上传",
+    "处理中",
+    "加载",
+    "慢",
 ]
 
 
@@ -28,6 +45,14 @@ def load_logs() -> list:
         return []
 
     with open(LOG_FILE, "r", encoding="utf-8") as file:
+        return json.load(file)
+
+
+def load_memory_seed() -> list:
+    if not MEMORY_SEED_FILE.exists():
+        return []
+
+    with open(MEMORY_SEED_FILE, "r", encoding="utf-8") as file:
         return json.load(file)
 
 
@@ -53,6 +78,8 @@ def save_ticket_process_log(state: dict) -> None:
         "similar_history_count": state.get("similar_history_count", 0),
         "history_ticket_ids": state.get("history_ticket_ids", []),
         "used_history_context": bool(state.get("history_context")),
+        "tool_name": state.get("tool_name", ""),
+        "tool_result": state.get("tool_result", ""),
         "draft_reply": state["draft_reply"],
         "review_result": state["review_result"],
         "final_status": state["final_status"],
@@ -92,7 +119,7 @@ def describe_similar_ticket_logs(
     ticket_content: str = "",
     limit: int = 2,
 ) -> list:
-    logs = load_logs()
+    logs = load_logs() + load_memory_seed()
     memory_records = []
 
     for log in reversed(logs):

@@ -1,4 +1,6 @@
 from collections import Counter
+import json
+from pathlib import Path
 
 import streamlit as st
 
@@ -9,6 +11,10 @@ from ticket_agent.web_workflow import (
     prepare_ticket_for_review,
     stop_duplicate_ticket,
 )
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+DATA_DIR = PROJECT_ROOT / "data"
 
 
 st.set_page_config(
@@ -96,6 +102,10 @@ def init_state() -> None:
         st.session_state["ticket_state"] = None
     if "selected_ticket_id" not in st.session_state:
         st.session_state["selected_ticket_id"] = "T1001"
+    if "custom_ticket_content" not in st.session_state:
+        st.session_state["custom_ticket_content"] = ""
+    if "use_custom_ticket" not in st.session_state:
+        st.session_state["use_custom_ticket"] = False
 
 
 def count_by(logs: list, field: str) -> Counter:
@@ -123,6 +133,14 @@ def render_step_list(steps: list) -> None:
         st.markdown(f'<div class="step-line">{step}</div>', unsafe_allow_html=True)
 
 
+def load_json_file(path: Path) -> dict:
+    if not path.exists():
+        return {}
+
+    with open(path, "r", encoding="utf-8") as file:
+        return json.load(file)
+
+
 def render_log_summary(logs: list) -> None:
     review_counter = count_by(logs, "review_result")
     category_counter = count_by(logs, "category")
@@ -146,6 +164,24 @@ def render_log_summary(logs: list) -> None:
     with col_b:
         st.markdown("**重复工单处理**")
         st.json(dict(duplicate_counter))
+
+
+def render_tool_call(state: dict) -> None:
+    st.markdown("### 工具调用")
+
+    if not state.get("tool_name"):
+        st.caption("当前还没有执行辅助工具。")
+        return
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write("工具名称：", state.get("tool_name"))
+        st.write("选择原因：", state.get("tool_reason"))
+        st.write("工具参数：")
+        st.json(state.get("tool_arguments", {}))
+    with col2:
+        st.write("工具返回：")
+        st.info(state.get("tool_result", "无"))
 
 
 def render_current_ticket(state: dict) -> None:
@@ -177,6 +213,8 @@ def render_current_ticket(state: dict) -> None:
     st.markdown("### 处理流程")
     render_step_list(state.get("steps", []))
 
+    render_tool_call(state)
+
     if state.get("workflow_status") == "waiting_duplicate_confirmation":
         st.markdown(
             """
@@ -197,6 +235,9 @@ def render_current_ticket(state: dict) -> None:
                     st.session_state["ticket_state"] = prepare_ticket_for_review(
                         state["ticket_id"],
                         continue_duplicate=True,
+                        custom_ticket_content=state["ticket_content"]
+                        if state["ticket_id"].startswith("CUSTOM")
+                        else "",
                     )
                 st.rerun()
 
@@ -266,7 +307,23 @@ def render_recent_logs(logs: list) -> None:
         st.info("还没有处理日志。")
         return
 
-    for index, log in enumerate(reversed(logs[-6:]), start=1):
+    keyword = st.text_input("搜索日志", placeholder="输入工单编号、类别、回复关键词")
+    filtered_logs = logs
+
+    if keyword:
+        filtered_logs = [
+            log for log in logs
+            if keyword in log.get("ticket_id", "")
+            or keyword in log.get("ticket_content", "")
+            or keyword in log.get("category", "")
+            or keyword in log.get("draft_reply", "")
+        ]
+
+    if not filtered_logs:
+        st.warning("没有匹配的日志。")
+        return
+
+    for index, log in enumerate(reversed(filtered_logs[-8:]), start=1):
         title = (
             f"{index}. {log.get('ticket_id', '未知工单')} | "
             f"{log.get('review_result', '未知审核')} | "
@@ -279,8 +336,49 @@ def render_recent_logs(logs: list) -> None:
             st.write("同一工单历史次数：", log.get("previous_ticket_count", 0))
             st.write("重复工单确认：", log.get("duplicate_review_result") or "无")
             st.write("参考历史工单：", log.get("history_ticket_ids") or "无")
+            st.write("工具调用：", log.get("tool_name") or "无")
+            st.write("工具结果：", log.get("tool_result") or "无")
             st.write("回复草稿：", log.get("draft_reply", ""))
             st.write("最终状态：", log.get("final_status", ""))
+
+
+def render_eval_report_card(title: str, report_path: Path) -> None:
+    report = load_json_file(report_path)
+
+    if not report:
+        st.warning(f"{title} 还没有报告，请先运行评估脚本。")
+        return
+
+    st.markdown(f"### {title}")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        render_metric("测试数量", str(report.get("total_count", report.get("report_count", 0))))
+    with col2:
+        render_metric("正确数量", str(report.get("correct_count", "-")))
+    with col3:
+        accuracy = report.get("accuracy")
+        if accuracy is None:
+            accuracy = "通过" if report.get("all_passed") else "未通过"
+        render_metric("结果", str(accuracy))
+
+    with st.expander("查看原始报告", expanded=False):
+        st.json(report)
+
+
+def render_eval_reports() -> None:
+    st.markdown("### 评估报告")
+    st.caption("这些报告来自命令行评估脚本，用来证明 Agent 的分类、策略、记忆和工具选择不是只靠手动测试。")
+
+    report_files = [
+        ("分类和优先级评估", DATA_DIR / "classification_eval_report.json"),
+        ("重复工单策略评估", DATA_DIR / "duplicate_policy_eval_report.json"),
+        ("历史记忆检索评估", DATA_DIR / "memory_retrieval_eval_report.json"),
+        ("工具路由评估", DATA_DIR / "tool_routing_eval_report.json"),
+        ("一键评估总览", DATA_DIR / "evaluation_summary.json"),
+    ]
+
+    for title, path in report_files:
+        render_eval_report_card(title, path)
 
 
 init_state()
@@ -288,24 +386,44 @@ logs = load_logs()
 
 with st.sidebar:
     st.markdown("## 工单设置")
+    use_custom_ticket = st.checkbox("输入自定义工单", value=st.session_state["use_custom_ticket"])
+    st.session_state["use_custom_ticket"] = use_custom_ticket
     ticket_options = list(FAKE_TICKET_DATABASE.keys())
     selected_ticket_id = st.selectbox(
         "选择工单",
         ticket_options,
         index=ticket_options.index(st.session_state["selected_ticket_id"]),
+        disabled=use_custom_ticket,
     )
     st.session_state["selected_ticket_id"] = selected_ticket_id
 
     st.markdown("### 工单内容")
-    st.caption(FAKE_TICKET_DATABASE[selected_ticket_id])
+    if use_custom_ticket:
+        custom_ticket_content = st.text_area(
+            "自定义工单内容",
+            value=st.session_state["custom_ticket_content"],
+            height=120,
+            placeholder="例如：用户反馈支付成功后没有开通课程权限。",
+        )
+        st.session_state["custom_ticket_content"] = custom_ticket_content
+        active_ticket_id = "CUSTOM-001"
+        active_ticket_content = custom_ticket_content
+    else:
+        active_ticket_id = selected_ticket_id
+        active_ticket_content = FAKE_TICKET_DATABASE[selected_ticket_id]
+        st.caption(active_ticket_content)
 
     if st.button("生成处理草稿", type="primary", use_container_width=True):
-        with st.spinner("正在读取工单、检查历史并生成草稿..."):
-            st.session_state["ticket_state"] = prepare_ticket_for_review(
-                selected_ticket_id,
-                continue_duplicate=False,
-            )
-        st.rerun()
+        if use_custom_ticket and not st.session_state["custom_ticket_content"].strip():
+            st.warning("请先输入自定义工单内容。")
+        else:
+            with st.spinner("正在读取工单、检查历史并生成草稿..."):
+                st.session_state["ticket_state"] = prepare_ticket_for_review(
+                    active_ticket_id,
+                    continue_duplicate=False,
+                    custom_ticket_content=active_ticket_content if use_custom_ticket else "",
+                )
+            st.rerun()
 
     if st.button("清空当前页面状态", use_container_width=True):
         st.session_state["ticket_state"] = None
@@ -320,6 +438,7 @@ with st.sidebar:
     st.write("- 重复工单确认")
     st.write("- 历史记忆")
     st.write("- RAG 检索")
+    st.write("- 工具调用")
     st.write("- 人工审核")
     st.write("- 日志持久化")
 
@@ -329,7 +448,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-tab_process, tab_logs = st.tabs(["处理工单", "日志与观测"])
+tab_process, tab_logs, tab_eval = st.tabs(["处理工单", "日志与观测", "评估报告"])
 
 with tab_process:
     render_current_ticket(st.session_state["ticket_state"])
@@ -337,3 +456,6 @@ with tab_process:
 with tab_logs:
     render_log_summary(logs)
     render_recent_logs(logs)
+
+with tab_eval:
+    render_eval_reports()

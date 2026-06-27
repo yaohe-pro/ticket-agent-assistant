@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-06-19 23:02:21",
-  "total_count": 2,
-  "correct_count": 2,
+  "created_at": "2026-06-27 11:34:14",
+  "total_count": 3,
+  "correct_count": 3,
   "accuracy": 1.0,
   "records": [
     {
@@ -13,7 +13,7 @@
       "expected_keyword": "产品",
       "actual_count": 2,
       "retrieved_ticket_ids": [
-        "T1001",
+        "S2001",
         "T1001"
       ],
       "category_correct": true,
@@ -29,9 +29,27 @@
       "ticket_content": "用户反馈：系统页面打不开，影响今天的培训课程。",
       "min_expected_count": 1,
       "expected_keyword": "打不开",
+      "actual_count": 2,
+      "retrieved_ticket_ids": [
+        "S2002",
+        "T1003"
+      ],
+      "category_correct": true,
+      "priority_correct": true,
+      "count_correct": true,
+      "keyword_correct": true,
+      "is_correct": true
+    },
+    {
+      "name": "支付权限类历史记忆",
+      "category": "billing_question",
+      "priority": "high",
+      "ticket_content": "用户反馈：支付成功后没有开通课程权限。",
+      "min_expected_count": 1,
+      "expected_keyword": "支付",
       "actual_count": 1,
       "retrieved_ticket_ids": [
-        "T1003"
+        "S2003"
       ],
       "category_correct": true,
       "priority_correct": true,

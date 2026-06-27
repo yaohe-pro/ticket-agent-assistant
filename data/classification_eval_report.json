@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-06-19 23:02:21",
-  "total_count": 3,
-  "correct_count": 3,
+  "created_at": "2026-06-27 11:34:14",
+  "total_count": 9,
+  "correct_count": 9,
   "accuracy": 1.0,
   "records": [
     {
@@ -29,6 +29,60 @@
       "actual_category": "system_issue",
       "expected_priority": "high",
       "actual_priority": "high",
+      "is_correct": true
+    },
+    {
+      "ticket_id": "T1004",
+      "ticket_content": "用户反馈：登录账号时提示验证码错误，已经尝试多次仍然无法进入系统。",
+      "expected_category": "account_issue",
+      "actual_category": "account_issue",
+      "expected_priority": "high",
+      "actual_priority": "high",
+      "is_correct": true
+    },
+    {
+      "ticket_id": "T1005",
+      "ticket_content": "用户反馈：想了解企业知识库问答系统的价格和套餐。",
+      "expected_category": "billing_question",
+      "actual_category": "billing_question",
+      "expected_priority": "medium",
+      "actual_priority": "medium",
+      "is_correct": true
+    },
+    {
+      "ticket_id": "T1006",
+      "ticket_content": "用户反馈：今天下午培训课程的直播入口在哪里？",
+      "expected_category": "schedule_question",
+      "actual_category": "schedule_question",
+      "expected_priority": "high",
+      "actual_priority": "high",
+      "is_correct": true
+    },
+    {
+      "ticket_id": "T1007",
+      "ticket_content": "用户投诉：上次反馈的问题一直没有回复，希望尽快给出处理结果。",
+      "expected_category": "complaint",
+      "actual_category": "complaint",
+      "expected_priority": "high",
+      "actual_priority": "high",
+      "is_correct": true
+    },
+    {
+      "ticket_id": "T1009",
+      "ticket_content": "用户反馈：支付成功后没有开通课程权限。",
+      "expected_category": "billing_question",
+      "actual_category": "billing_question",
+      "expected_priority": "high",
+      "actual_priority": "high",
+      "is_correct": true
+    },
+    {
+      "ticket_id": "T1012",
+      "ticket_content": "用户反馈：页面偶尔加载很慢，但刷新后可以恢复。",
+      "expected_category": "system_issue",
+      "actual_category": "system_issue",
+      "expected_priority": "medium",
+      "actual_priority": "medium",
       "is_correct": true
     }
   ]
